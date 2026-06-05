@@ -180,6 +180,23 @@ public class PaymentService{
         return this.gateway.performPayment(req);
     }
 }
+public abstract PaymentServiceFactory(){
+    public static PaymentService createPaymentService();
+}
+public class RazorpayPaymentServiceFactory extends PaymentServiceFactory{
+    @Override 
+    public static PaymentService createPaymentService(){
+        gatewayMaker = new RazorpayGatewayMaker();
+        return new PaymentService(gatewayMaker);
+    }
+}
+public class PaytmPaymentServiceFactory extends PaymentServiceFactory{
+    @Override 
+    public static PaymentService createPaymentService(){
+        gatewayMaker = new PaytmGatewayMaker();
+        return new PaymentService(gatewayMaker);
+    }
+}
 // Singleton-Design Pattern : We make sure that the whole application has only one payment section 
 // Facade-Design Pattern : User makes call only to PaymentController who performs the whole transaction process
 public class PaymentController{
@@ -209,9 +226,7 @@ public class Main {
         request.senderId = "USER_101";
         request.receiverId = "MERCHANT_501";
         request.amount = 2500.75f;
-        PaymentGatewayMaker gatewayMaker =  new RazorpayGatewayMaker();
-
-        PaymentService paymentService =  new PaymentService(gatewayMaker);
+        PaymentService paymentService =  new PaytmPaymentServiceFactory.createPaymentService()
         PaymentController controller = PaymentController.getInstance();
         boolean status = controller.performPayment(request, paymentService);
         if(status){
